@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revolut Style Ledger</title>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+       
+        <div class="header">
+            <div class="profile">
+                <div class="avatar">KP</div>
+                <div class="user-info">
+                    <h1>Kyrone Peters</h1>
+                    <p>FinTech Portfolio Acc</p>
+                </div>
+            </div>
+            <span class="badge">Live Proxy</span>
+        </div>
+
+       <div class="balance-card">
+            <p class="balance-label">Total Portfolio Exposure</p>
+            <div class="balance-amount">
+                £1,000.00<span class="balance-currency">GBP Base</span>
+            </div>
+           
+            <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: #9ca3af;">
+                <span>Market Spread: <strong style="color: #34d399;">+0.02%</strong></span>
+                <span>System Volatility: <strong style="color: #60a5fa;">Low</strong></span>
+            </div>
+        </div>
+
+       
+        <div class="calc-suite">
+            <p class="calc-label">Interactive Exchange Calc</p>
+            <div class="input-group">
+                <span class="input-symbol">£</span>
+                <input type="number" id="gbp-input" value="1" class="calc-input" placeholder="0.00">
+            </div>
+        </div>
+
+        
+        <div class="rate-matrix">
+            <p class="matrix-title">Live Rates (Per 1 GBP)</p>
+            
+           
+            <div class="rate-row">
+                <div class="asset-info">
+                    <span class="flag">🇺🇸</span>
+                    <span class="asset-ticker">USD <span class="asset-name">(US Dollar)</span></span>
+                </div>
+                <div class="rate-values">
+                    <span id="rate-usd" class="live-value usd-text">1.3100</span>
+                    <p id="calc-usd" class="total-text">\$1.31 Total</p>
+                </div>
+            </div>
+
+            
+            <div class="rate-row">
+                <div class="asset-info">
+                    <span class="flag">🇪🇺</span>
+                    <span class="asset-ticker">EUR <span class="asset-name">(Euro)</span></span>
+                </div>
+                <div class="rate-values">
+                    <span id="rate-eur" class="live-value eur-text">1.1900</span>
+                    <p id="calc-eur" class="total-text">€1.19 Total</p>
+                </div>
+            </div>
+
+        
+            <div class="rate-row">
+                <div class="asset-info">
+                    <span class="flag">🇯🇵</span>
+                    <span class="asset-ticker">JPY <span class="asset-name">(Japanese Yen)</span></span>
+                </div>
+                <div class="rate-values">
+                    <span id="rate-jpy" class="live-value jpy-text">192.50</span>
+                    <p id="calc-jpy" class="total-text">¥192.50 Total</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+ 
+    <script>
+        let cachedRates = { USD: 1.3100, EUR: 1.1900, JPY: 192.5000 };
+
+        async function fetchLiveRates() {
+            try {
+                const response = await fetch('http://127.0.0');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    cachedRates.USD = data.rates.USD;
+                    cachedRates.EUR = data.rates.EUR;
+                    cachedRates.JPY = data.rates.JPY;
+
+                    document.getElementById('rate-usd').innerText = cachedRates.USD.toFixed(4);
+                    document.getElementById('rate-eur').innerText = cachedRates.EUR.toFixed(4);
+                    document.getElementById('rate-jpy').innerText = cachedRates.JPY.toFixed(4);
+                    
+                    calculateConversions();
+                }
+            } catch (error) {
+                console.warn("API proxy unreachable. Reverting to structural fallback integers.");
+                document.getElementById('rate-usd').innerText = cachedRates.USD.toFixed(4);
+                document.getElementById('rate-eur').innerText = cachedRates.EUR.toFixed(4);
+                document.getElementById('rate-jpy').innerText = cachedRates.JPY.toFixed(4);
+                calculateConversions();
+            }
+        }
+
+        function calculateConversions() {
+            const gbpAmount = parseFloat(document.getElementById('gbp-input').value) || 0;
+            document.getElementById('calc-usd').innerText = `$${(gbpAmount * cachedRates.USD).toFixed(2)} Total`;
+            document.getElementById('calc-eur').innerText = `€${(gbpAmount * cachedRates.EUR).toFixed(2)} Total`;
+            document.getElementById('calc-jpy').innerText = `¥${(gbpAmount * cachedRates.JPY).toFixed(2)} Total`;
+        }
+
+        document.getElementById('gbp-input').addEventListener('input', calculateConversions);
+        fetchLiveRates();
+    </script>
+</body>
+</html>
